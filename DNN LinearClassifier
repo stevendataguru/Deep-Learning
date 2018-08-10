@@ -1,0 +1,45 @@
+get x_data, y_data
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(x_data,y_data,test_size=0.3)
+
+import tensorflow as tf
+newcolname = tf.feature_column.numeric_column('col')    #do for all to new col name
+ncol = tf.feature_column.categorical_column_with_hash_bucket('col', hash_bucket_size=100) #do all
+embedded_group_column = tf.feature_column.embedding_column(col, dimension=100) #do all
+feat_cols = [a,b,c,…..#embedded_group_column]
+
+input_func = tf.estimator.inputs.pandas_input_fn(x=X_train,y=y_train,batch_size=10,num_epochs=1000,shuffle=True)
+
+dnn_model = tf.estimator.DNNClassifier(hidden_units=[10,10,10],feature_columns=feat_cols,n_classes=2)
+
+dnn_model.train(input_fn=input_func,steps=1000)
+
+#Eval
+
+eval_input_func = tf.estimator.inputs.pandas_input_fn(
+      x=X_test,
+      y=y_test,
+      batch_size=10,
+      num_epochs=1,
+      shuffle=False)
+
+results = dnn_model.evaluate(eval_input_func)
+
+results
+
+#Prediction
+
+pred_fn = tf.estimator.inputs.pandas_input_fn(x=X_test,batch_size=10, num_epochs=1, shuffle=False)
+
+predictions = list(dnn_model.predict(input_fn=pred_fn))
+predictions
+
+final_preds = []
+for pred in predictions:
+    final_preds.append(pred['class_ids'][0])
+
+final_preds
+
+from sklearn.metrics import classification_report
+print(classification_report(y_test,final_preds))
