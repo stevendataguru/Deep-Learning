@@ -1,0 +1,42 @@
+x_data = df.drop('Col',axis=1)
+y_data = df['Col']
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(x_data,y_data,test_size=0.3)
+import tensorflow as tf
+
+col = tf.feature_column.categorical_column_with_hash_bucket('col', hash_bucket_size=100)
+col = tf.feature_column.numeric_column('col')
+
+feat_cols = [a,b,c,…..]
+
+
+input_func = tf.estimator.inputs.pandas_input_fn(x=X_train,y=y_train,batch_size=10 ,num_epochs=1000,shuffle=True)
+ 
+
+#model
+model = tf.estimator.LinearClassifier(feature_columns=feat_cols,n_classes=2)
+###model = tf.estimator.LinearRegressor(feature_columns=feat_cols)
+
+model.train(input_fn=input_func,steps=1000)
+
+
+#eval
+eval_input_func = tf.estimator.inputs.pandas_input_fn(
+      x=X_test,
+      y=y_test,
+      batch_size=10,
+      num_epochs=1,
+      shuffle=False)
+
+results = model.evaluate(eval_input_func)
+
+results
+
+
+#prediction
+pred_fn = tf.estimator.inputs.pandas_input_fn(x=X_test,batch_size=10, num_epochs=1, shuffle=False)
+
+predictions = list(model.predict(input_fn=pred_fn))
+predictions
+
